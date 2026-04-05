@@ -1,5 +1,7 @@
 import { getServerClient } from '@/lib/supabase/client';
 
+export const dynamic = 'force-dynamic';
+
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const COUNTRY_META: Record<string, { flag: string; name: string; currency: string }> = {
