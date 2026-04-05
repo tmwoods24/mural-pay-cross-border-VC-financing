@@ -130,6 +130,24 @@ export async function POST(req: NextRequest) {
   const mural = getMuralClient();
   const db = getServerClient();
 
+  // ── Guard: duplicate payout prevention ───────────────────────────────────
+  const { data: existingTxn, error: existingErr } = await db
+    .from('transactions')
+    .select('id')
+    .eq('commitment_id', commitmentId)
+    .eq('status', 'completed')
+    .maybeSingle();
+
+  if (existingErr) {
+    return Response.json({ error: existingErr.message }, { status: 500 });
+  }
+  if (existingTxn) {
+    return Response.json(
+      { error: 'A completed payout already exists for this commitment.' },
+      { status: 409 },
+    );
+  }
+
   // ── Step 1: Create counterparty ───────────────────────────────────────────
   let counterparty: Awaited<ReturnType<typeof mural.createCounterparty>>;
   try {
